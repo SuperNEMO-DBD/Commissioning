@@ -1,6 +1,6 @@
 # Require out-of-source build
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
-  message(STATUS "${PROJECT_NAME} requires an out-of-source build.")
+  message(STATUS "The project requires an out-of-source build.")
   message(STATUS "Please remove these files from ${CMAKE_BINARY_DIR} first:")
   message(STATUS "  CMakeCache.txt")
   message(STATUS "  CMakeFiles")
@@ -19,6 +19,12 @@ include(GNUInstallDirs)
 list(INSERT CMAKE_MODULE_PATH 0 ${PROJECT_SOURCE_DIR}/cmake)
 message(STATUS "[info] CMAKE_MODULE_PATH = '${CMAKE_MODULE_PATH}'")
 
+# - Build setup
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
+
+# - Dependencies
 find_package(SNFrontEndElectronics REQUIRED)
 message(STATUS  "SNFrontEndElectronics_INCLUDE_DIR=${SNFrontEndElectronics_INCLUDE_DIR}")
 
@@ -31,16 +37,9 @@ add_executable(snfee-rtd-read-calo
   calo_waveform_fft.cc
   )
 
-target_link_libraries(snfee-rtd-read-calo
+target_link_libraries(snfee-rtd-read-calo PRIVATE
   SNFrontEndElectronics::snfee
   )
-
-set_target_properties(snfee-rtd-read-calo
-  PROPERTIES
-  RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
-  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
-  )
-
 
 # - Executable:
 add_executable(snfee-rtd-ana-calo
@@ -51,17 +50,11 @@ add_executable(snfee-rtd-ana-calo
   calo_waveform_fft.cc
   )
 
-target_link_libraries(snfee-rtd-ana-calo
+target_link_libraries(snfee-rtd-ana-calo PRIVATE
   SNFrontEndElectronics::snfee
   )
 
-set_target_properties(snfee-rtd-ana-calo
-  PROPERTIES
-  RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
-  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
-  )
-
-
+# - Install if required
 install(TARGETS snfee-rtd-read-calo snfee-rtd-ana-calo
   DESTINATION ${CMAKE_INSTALL_BINDIR}
   )
