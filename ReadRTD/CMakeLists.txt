@@ -14,7 +14,8 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
   message(FATAL_ERROR "in-source build detected")
 endif()
 
-# - Load Custom Modules
+# - Load Builtin/Custom Modules
+include(GNUInstallDirs)
 list(INSERT CMAKE_MODULE_PATH 0 ${PROJECT_SOURCE_DIR}/cmake)
 message(STATUS "[info] CMAKE_MODULE_PATH = '${CMAKE_MODULE_PATH}'")
 
@@ -40,14 +41,6 @@ set_target_properties(snfee-rtd-read-calo
   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
   )
 
-install(FILES
-  ${CMAKE_BINARY_DIR}/snfee-rtd-read-calo
-  DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}
-  PERMISSIONS
-  OWNER_READ OWNER_WRITE OWNER_EXECUTE
-  GROUP_READ GROUP_EXECUTE
-  WORLD_READ WORLD_EXECUTE
-  )
 
 # - Executable:
 add_executable(snfee-rtd-ana-calo
@@ -68,13 +61,7 @@ set_target_properties(snfee-rtd-ana-calo
   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
   )
 
-install(FILES
-    ${CMAKE_BINARY_DIR}/snfee-rtd-ana-calo
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}
-    PERMISSIONS
-    OWNER_READ OWNER_WRITE OWNER_EXECUTE
-    GROUP_READ GROUP_EXECUTE
-    WORLD_READ WORLD_EXECUTE
-    )
 
-# end
+install(TARGETS snfee-rtd-read-calo snfee-rtd-ana-calo
+  DESTINATION ${CMAKE_INSTALL_BINDIR}
+  )
