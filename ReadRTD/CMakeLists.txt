@@ -18,7 +18,7 @@ endif()
 list(INSERT CMAKE_MODULE_PATH 0 ${PROJECT_SOURCE_DIR}/cmake)
 message(STATUS "[info] CMAKE_MODULE_PATH = '${CMAKE_MODULE_PATH}'")
 
-find_package(SNFrontEndElectronics)
+find_package(SNFrontEndElectronics REQUIRED)
 message(STATUS  "SNFrontEndElectronics_INCLUDE_DIR=${SNFrontEndElectronics_INCLUDE_DIR}")
 include_directories(${SNFrontEndElectronics_INCLUDE_DIRS})
 
