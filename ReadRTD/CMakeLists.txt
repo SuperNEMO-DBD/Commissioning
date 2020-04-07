@@ -20,7 +20,6 @@ message(STATUS "[info] CMAKE_MODULE_PATH = '${CMAKE_MODULE_PATH}'")
 
 find_package(SNFrontEndElectronics REQUIRED)
 message(STATUS  "SNFrontEndElectronics_INCLUDE_DIR=${SNFrontEndElectronics_INCLUDE_DIR}")
-include_directories(${SNFrontEndElectronics_INCLUDE_DIRS})
 
 # - Executable:
 add_executable(snfee-rtd-read-calo
