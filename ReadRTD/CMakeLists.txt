@@ -1,8 +1,4 @@
-# - Example project for accessing SuperNEMO RTD data (Raw Trigger Data)
-
-cmake_minimum_required(VERSION 3.3 FATAL_ERROR)
-project(snfee_examples_read_rtd LANGUAGES CXX)
-
+# Require out-of-source build
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
   message(STATUS "${PROJECT_NAME} requires an out-of-source build.")
   message(STATUS "Please remove these files from ${CMAKE_BINARY_DIR} first:")
@@ -13,6 +9,10 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
   message(STATUS "  ${CMAKE_SOURCE_DIR}")
   message(FATAL_ERROR "in-source build detected")
 endif()
+
+# Project setup
+cmake_minimum_required(VERSION 3.3 FATAL_ERROR)
+project(snfee_examples_read_rtd VERSION 0.1.0)
 
 # - Load Builtin/Custom Modules
 include(GNUInstallDirs)
