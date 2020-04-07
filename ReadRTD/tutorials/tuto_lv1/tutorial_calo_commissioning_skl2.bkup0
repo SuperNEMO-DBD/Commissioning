@@ -1,0 +1,184 @@
+// Standard library:
+#include <iostream>
+#include <exception>
+#include <cstdlib>
+#include <numeric> // for mean, sigma
+#include <algorithm>
+
+
+#include "TFile.h"
+#include "TTree.h"
+#include "TH1F.h"
+#include "TH2F.h"
+
+
+#include <snfee/snfee.h>
+#include <snfee/io/multifile_data_reader.h>
+#include <snfee/data/raw_trigger_data.h>
+
+
+// This project:
+#include <sncabling/sncabling.h>
+#include <sncabling/om_id.h>
+#include <sncabling/calo_hv_id.h>
+#include <sncabling/calo_hv_cabling.h>
+#include <sncabling/label.h>
+
+#include <sncabling/service.h>
+#include <sncabling/calo_signal_cabling.h>
+
+bool debug = true;
+
+
+bool usage(){
+
+  std::clog<<std::endl;
+  std::clog<<"+--------------------------------------------------+"<<std::endl;
+  std::clog<<"| SuperNEMO calorimeter commissioning tutorial lv2 |"<<std::endl;
+  std::clog<<"+--------------------------------------------------+"<<std::endl;
+
+  std::clog<<"How to : "<<std::endl;
+  std::clog<<" "<<std::endl;
+  std::clog<<"List of option : "<<std::endl;
+  std::clog<<"    |->   -i or --input_file "<<std::endl;
+  std::clog<<std::endl;
+  std::clog<<std::endl;
+
+  std::clog<<"Example : "<<std::endl;
+  std::clog<<"snfee-tuto_lv1 -i toto.data.gz"<<std::endl;
+
+  return 1;
+  
+}
+
+// Main program
+
+int main(int argc, char **argv)
+{
+  sncabling::initialize();  
+  int error_code = EXIT_SUCCESS;
+  
+  try {
+    
+    if (argc < 2){
+      usage();
+      exit;
+    }
+
+    std::string filename="default.dat";
+    
+    for(int i = 0;i<argc;i++){
+      if(std::string(argv[i]) =="--input_file" || std::string(argv[i]) =="-i" ){filename = argv[i+1];}
+    }
+    
+   
+    // Cf tutorial lv0
+    sncabling::service snCabling;
+    snCabling.initialize_simple();
+    
+    snfee::io::multifile_data_reader::config_type reader_cfg;
+    reader_cfg.filenames.push_back(filename);
+    
+    snfee::io::multifile_data_reader rtd_source(reader_cfg);
+    snfee::data::raw_trigger_data rtd; 
+
+
+    const sncabling::calo_signal_cabling & caloSignalCabling
+      = snCabling.get_calo_signal_cabling();
+    
+    
+    
+    uint64_t first_tdc = 0;
+    uint64_t last_tdc  = 0;
+
+    std::size_t rtd_counter = 0;
+    //Main loop
+    while (rtd_source.has_record_tag() ) {
+      rtd_counter++;
+      rtd_source.load(rtd);
+      int32_t trigger_id = rtd.get_trigger_id();
+      int32_t run_id     = rtd.get_run_id();
+
+      if(rtd_counter < 10)std::clog<<"In Run : "<<run_id<<" Trigger # "<<trigger_id <<std::endl;
+      
+      std::size_t calo_counter = 0;
+      // Loop on calo hit
+      for (const auto & p_calo_hit : rtd.get_calo_hits()) {
+	const snfee::data::calo_hit_record & calo_hit = *p_calo_hit;
+	uint64_t tdc             = calo_hit.get_tdc();        // TDC timestamp (48 bits)
+	int32_t  crate_num       = calo_hit.get_crate_num();  // Crate number (0,1,2)
+	int32_t  board_num       = calo_hit.get_board_num();  // Board number (0-19)
+	int32_t  chip_num        = calo_hit.get_chip_num();   // Chip number (0-7)
+        bool     has_waveforms   = calo_hit.has_waveforms(); // Default: true
+
+
+	if(rtd_counter == 1) first_tdc = tdc;
+	else last_tdc = tdc;
+	
+	      
+	
+	if(rtd_counter < 10 ){
+	  std::clog <<"--------------------"<<std::endl;
+	  std::clog<<"   |-> tdc          : "<< tdc <<std::endl;
+	  std::clog<<"   |-> tdc(ns)      : "<<  snfee::model::feb_constants::SAMLONG_DEFAULT_TDC_LSB_NS*tdc <<std::endl;
+	}
+	
+	
+	// loop on channels
+	for (int ichannel = 0; ichannel < snfee::model::feb_constants::SAMLONG_NUMBER_OF_CHANNELS; ichannel++) {
+	  const snfee::data::calo_hit_record::channel_data_record & ch_data = calo_hit.get_channel_data(ichannel);
+	  bool    ch_lt           = ch_data.is_lt();            // Low threshold flag
+	  bool    ch_ht           = ch_data.is_ht();            // High threshold flag
+	  int32_t ch_baseline     = ch_data.get_baseline();     // Computed baseline       (LSB: ADC unit/16)
+	  int32_t ch_peak         = ch_data.get_peak();         // Computed peak amplitude (LSB: ADC unit/8)
+	  int32_t ch_charge       = ch_data.get_charge();       // Computed charge
+
+
+	  sncabling::calo_signal_id readout_id(sncabling::CALOSIGNAL_CHANNEL,
+					       crate_num, 
+					       board_num, 
+					       snfee::model::feb_constants::SAMLONG_NUMBER_OF_CHANNELS * chip_num + ichannel);
+
+	  if (caloSignalCabling.has_channel(readout_id)) {
+	    const sncabling::om_id & calo_id = caloSignalCabling.get_om(readout_id);
+	    if(rtd_counter < 10 ){
+	    std::clog <<"readout channel: "<<readout_id.to_label()<<std::endl;
+	    std::clog <<"   |-> crate   : "<<crate_num<<std::endl;
+	    std::clog <<"   |-> board   : "<<board_num<<std::endl;
+	    std::clog <<"   |-> channel : "<<chip_num*2+ichannel<<std::endl;
+	    std::clog <<"om id : "<<calo_id.to_label()<<std::endl;
+	    std::clog <<"   |-> side   : "<<calo_id.get_side()<<std::endl;
+	    std::clog <<"   |-> column : "<<calo_id.get_column()<<std::endl;
+	    std::clog <<"   |-> row    : "<<calo_id.get_row()<<std::endl;
+	    std::clog <<"Peak        : "<<ch_peak<<std::endl;
+	    std::clog <<"Peak(mV)    : "<<ch_peak * snfee::model::feb_constants::SAMLONG_ADC_VOLTAGE_LSB_MV / 8<<std::endl;
+	    std::clog <<"--------------------"<<std::endl;
+	    }
+	  }
+	  
+	}//end of channels
+      }//end of calohit
+    }//end of file
+
+
+    uint64_t run_duration=snfee::model::feb_constants::SAMLONG_DEFAULT_TDC_LSB_NS*(last_tdc-first_tdc);
+    
+    std::clog<<"====== Summary ========="<<std::endl;
+    std::clog<<std::endl;
+    std::clog<<std::endl;
+
+    std::clog<<"Run duration : "<<run_duration<<" ns"<<std::endl;
+    std::clog<<"Nb of entry  : "<<rtd_counter<<std::endl;
+    
+    a_file.Write();
+    a_file.Close();
+
+    
+
+  } catch (std::exception & error) {
+    std::cerr << "[error] " << error.what() << std::endl;
+    error_code = EXIT_FAILURE;
+  }
+  sncabling::terminate();
+  return error_code;
+}

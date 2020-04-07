@@ -1,0 +1,63 @@
+****************************************
+* Welcome into RTD Reader tutorial lv0 * 
+****************************************
+
+Firstable, look after the documentation : 
+- NemoDocDB-doc-5002-v1 (commissioning data analysis @ bordaeux analysis workshop)
+- NemoDocDB-doc-4975-v3 (raw data model)
+
+
+1) To use installed environnement managed by Frc and Yves, 
+create an executable *setup.sh* file with : 
+
+-----
+# Set the path to development version of the data commissioning software:
+export SW_DEV_BASE_DIR="/sps/nemo/scratch/mauger/sw"
+
+# Load Yves' Linuxbrew installation:
+if [ -f ${SW_DEV_BASE_DIR}/SuperNEMO/config/linuxbrew_pro.bash ]; then
+   source ${SW_DEV_BASE_DIR}/SuperNEMO/config/linuxbrew_pro.bash
+fi
+# Load Francois's Bayeux library installation:
+if [ -f ${SW_DEV_BASE_DIR}/SuperNEMO/config/bayeux.bash ]; then
+   source ${SW_DEV_BASE_DIR}/SuperNEMO/config/bayeux.bash
+fi
+# Load Francois's SNFEE library installation:
+if [ -f ${SW_DEV_BASE_DIR}/SuperNEMO/config/snfee.bash ]; then
+   source ${SW_DEV_BASE_DIR}/SuperNEMO/config/snfee.bash
+fi
+-----
+
+2) in bash env. 
+----
+source setup.sh
+snfee_setup
+----
+
+
+3) Create a working directory for commissioning data analysis : 
+----
+mkdir -p /sps/nemo/scratch/${USER}/sw/rtd_analysis
+cd /sps/nemo/scratch/${USER}/sw/rtd_analysis
+----
+
+4) Get an example directory :
+----
+cp -a $(snfee-query --resourcedir)/Documentation/Examples/RawDataAnalysis/ReadRTD . 
+mkdir build
+mkdir install
+cd build
+----
+
+
+5) Compile the example to be ready to play : 
+----
+cmake -DCMAKE_INSTALL_PREFIX=../install -DSNFrontEndElectronics_DIR=$(snfee-query --cmakedir) ../ReadRTD
+make
+make install
+----
+
+6) If OK : 
+./snfee-rtd-read-calo --input-file "/sps/nemo/snemo/snemo_data/raw_data/v1/RTD/run_235/output_data.d/snemo_run-235_rtd.data.gz"
+
+

@@ -1,0 +1,92 @@
+****************************************
+* Welcome into RTD Reader tutorial lv1 * 
+****************************************
+
+Firstable, look after the documentation : 
+- NemoDocDB-doc-5002-v1 (commissioning data analysis @ bordaeux analysis workshop)
+- NemoDocDB-doc-4975-v3 (raw data model)
+
+Second : 
+source setup.sh and use snfee_setup
+
+1) Get the new skeleton to practice ((/scratch/ylemiere/commissioning_data_tutorial/tuto_lv1) : tutorial_calo_commissioning_skl2.bkup0
+
+- with filename as argument
+- underline snfee::model::feb_constants
+- look after .h
+    *  snfee-query --incdir
+/sps/nemo/scratch/mauger/sw/SuperNEMO/SNFrontEndElectronics/_build-v0.2.3.d/../install-v0.2.3/include
+look after file : /snfee/model/feb_constants.h
+
+-----
+static const     uint16_t SAMLONG_NUMBER_OF_CHANNELS    = 2;  
+static const     uint16_t SAMLONG_MAX_NUMBER_OF_SAMPLES = 1024;
+static const     double   SAMLONG_DEFAULT_TDC_LSB_NS;
+static const     double   SAMLONG_ADC_VOLTAGE_LSB_MV;
+-----
+
+need to look after .cc file 
+/sps/nemo/scratch/mauger/sw/SuperNEMO/SNFrontEndElectronics/snfee-v0.2.2.git/libs/SNFEE/src/snfee
+
+------
+SAMLONG_DEFAULT_TDC_LSB = 1. / feb_constants::SAMLONG_DEFAULT_SAMPLING_FREQUENCY;
+const double feb_constants::SAMLONG_ADC_VOLTAGE_LSB = (feb_constants::SAMLONG_ADC_MAX_VOLTAGE - feb_constants::SAMLONG_ADC_MIN_VOLTAGE) /      feb_constants::SAMLONG_ADC_NBITS;
+
+-----
+
+
+    * sncablingquery --incdir
+/sps/nemo/scratch/mauger/sw/SuperNEMO/SNCabling/_build.d/../_install.d/develop/include
+look after file : sncabling/om_id.h
+
+----
+bool is_main() const;
+bool is_xwall() const;
+bool is_gveto() const;
+bool is_ref() const;
+int get_side() const;
+int get_wall() const;
+int get_column() const;
+int get_row() const;
+int get_ref() const;
+-----
+
+2) access to the waveform : tutorial_calo_commissioning_skl2.bkup2
+
+- get the min/max
+- get the raw charge (full waveform)
+- get the raw charge (dedicated window)
+- get baselines
+
+3) Display the Waveform : tutorial_calo_commissioning_skl2.bkup3
+
+- #include <snfee/data/calo_waveform_drawer.h>
+std::unique_ptr<snfee::data::calo_waveform_drawer> calo_drawer;
+populate the waveform_info
+calo_drawer.reset(new snfee::data::calo_waveform_drawer(time_min_ns,
+                                                              time_max_ns,
+                                                              voltage_lower_mV,
+                                                              voltage_upper_mV,
+                                                              auto_range_time,
+                                                              auto_range_voltage));
+
+
+4) use classes algo : tutorial_calo_commissioning_skl2.bkup4
+
+----
+snfee::algo::calo_waveform_analysis calo_analysis
+----
+description : calo_waveform_analysis.cc  ----> void calo_waveform_analysis::do_measurements(....)
+
+
+charge_computer instance of calo_waveform_charge_computer -->
+-----
+snfee::algo::calo_waveform_charge_computer charge_computer(_config_.charge_computer_cfg);
+if (charge_computer.compute_charge(waveform_ns_mV, baseline, peak, charge))
+-----
+
+description : calo_waveform_charge_computer.cc ---> bool calo_waveform_charge_computer::compute_charge(...)
+
+use the calo_waveform_data to get the charge
+
+
