@@ -26,7 +26,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 
 # - Dependencies
 find_package(SNFrontEndElectronics REQUIRED)
-message(STATUS  "SNFrontEndElectronics_INCLUDE_DIR=${SNFrontEndElectronics_INCLUDE_DIR}")
+include_directories(${SNFrontEndElectronics_INCLUDE_DIRS})
 
 # - Executable:
 add_executable(snfee-rtd-read-calo
