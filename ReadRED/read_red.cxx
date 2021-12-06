@@ -104,6 +104,7 @@ int main (int argc, char *argv[])
 
 	  // Reference time (TDC)
 	  const snfee::data::timestamp & reference_time = red_calo_hit.get_reference_time();
+	  int64_t calo_tdc = reference_time.get_ticks();
 
 	  // Digitized waveform
 	  const std::vector<int16_t> & waveform = red_calo_hit.get_waveform();
@@ -141,14 +142,26 @@ int main (int argc, char *argv[])
 
 	      // ANODE timestamps
 	      const snfee::data::timestamp anode_timestamp_r0 = gg_timestamps.get_anode_time(0);
+	      const int64_t anode_tdc_r0 = anode_timestamp_r0.get_ticks();
+
 	      const snfee::data::timestamp anode_timestamp_r1 = gg_timestamps.get_anode_time(1);
+	      const int64_t anode_tdc_r1 = anode_timestamp_r1.get_ticks();
+
 	      const snfee::data::timestamp anode_timestamp_r2 = gg_timestamps.get_anode_time(2);
+	      const int64_t anode_tdc_r2 = anode_timestamp_r2.get_ticks();
+
 	      const snfee::data::timestamp anode_timestamp_r3 = gg_timestamps.get_anode_time(3);
+	      const int64_t anode_tdc_r3 = anode_timestamp_r3.get_ticks();
+
 	      const snfee::data::timestamp anode_timestamp_r4 = gg_timestamps.get_anode_time(4);
+	      const int64_t anode_tdc_r4 = anode_timestamp_r4.get_ticks();
 
 	      // CATHODE timestamps
 	      const snfee::data::timestamp bottom_cathode_timestamp = gg_timestamps.get_bottom_cathode_time();
-	      const snfee::data::timestamp top_cathode_timestamp = gg_timestamps.get_bottom_cathode_time();
+	      const int64_t bottom_cathode_tdc = bottom_cathode_timestamp.get_ticks();
+
+	      const snfee::data::timestamp top_cathode_timestamp = gg_timestamps.get_top_cathode_time();
+	      const int64_t top_cathode_tdc = top_cathode_timestamp.get_ticks();
 	    }
 	}
 
