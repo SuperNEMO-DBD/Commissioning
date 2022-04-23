@@ -14,6 +14,8 @@
 #include <snemo/datamodels/calo_digitized_hit.h>
 #include <snemo/datamodels/tracker_digitized_hit.h>
 
+#include "TFile.h"
+
 int main (int argc, char *argv[])
 {
   std::string input_filename = "";
@@ -29,6 +31,18 @@ int main (int argc, char *argv[])
 
 	  else if (arg=="-o" || arg=="--output")
 	    output_filename = std::string(argv[++iarg]);
+
+	  else if (arg=="-h" || arg=="--help")
+	    {
+	      std::cout << std::endl;
+	      std::cout << "Usage:   " << argv[0] << " [options]" << std::endl;
+	      std::cout << std::endl;
+	      std::cout << "Options:   -h / --help" << std::endl;
+	      std::cout << "           -i / --input  RED_FILE" << std::endl;
+	      std::cout << "           -o / --output ROOT_FILE" << std::endl;
+	      std::cout << std::endl;
+	      return 0;
+	    }
 
 	  else
 	    std::cerr << "*** unkown option " << arg << std::endl;
@@ -55,6 +69,10 @@ int main (int argc, char *argv[])
     
   // RED counter
   std::size_t red_counter = 0;
+
+  // Prepare output
+  TFile *root_file = new TFile (output_filename.data(), "RECREATE");
+  // [...]
 
   while (red_source.has_record_tag())
     {
@@ -172,6 +190,9 @@ int main (int argc, char *argv[])
   std::cout << "Total number of RED objects       : " << red_counter << std::endl;
 
   snfee::terminate();
+
+  // [...]->Write()
+  root_file->Close();
 
   return 0;
 }
