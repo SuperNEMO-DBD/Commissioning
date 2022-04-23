@@ -107,10 +107,13 @@ int main (int argc, char *argv[])
 
 	  // OM ID from SNCabling
 	  const sncabling::om_id om_id = red_calo_hit.get_om_id();
+	  // om_id.is_main() [...]
+	  // om_id.get_side() [...]
 
 	  // Reference time (TDC)
 	  const snemo::datamodel::timestamp & reference_time = red_calo_hit.get_reference_time();
 	  int64_t calo_tdc = reference_time.get_ticks();
+	  // >>> 1 calo TDC tick = 6.25E-9 sec
 
 	  // Digitized waveform
 	  const std::vector<int16_t> & waveform = red_calo_hit.get_waveform();
@@ -136,6 +139,9 @@ int main (int argc, char *argv[])
 
 	  // CELL ID from SNCabling
 	  const sncabling::gg_cell_id gg_id = red_tracker_hit.get_cell_id();
+	  // gg_id.get_side()
+	  // gg_id.get_row()
+	  // gg_id.get_layer()
 
 	  // GG timestamps
 	  const std::vector<snemo::datamodel::tracker_digitized_hit::gg_times> & gg_timestamps_v = red_tracker_hit.get_times();
@@ -143,6 +149,8 @@ int main (int argc, char *argv[])
 	  // Scan timestamps
 	  if (gg_timestamps_v.size() == 1)
 	    {
+	      // >>> 1 tracker TDC tick = 12.5E-9 sec
+
 	      // Case without multiple hit in the same category
 	      const snemo::datamodel::tracker_digitized_hit::gg_times & gg_timestamps = gg_timestamps_v.front();
 
