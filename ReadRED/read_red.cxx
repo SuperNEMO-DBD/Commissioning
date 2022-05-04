@@ -80,6 +80,9 @@ int main (int argc, char *argv[])
 
       // Reference time from trigger
       const snemo::datamodel::timestamp & red_reference_time = red.get_reference_time();
+      // snemo::datamodel::timestamp is a generic class
+      // for storing TDC timestamp (clock + TDC ticks) 
+      // but red_reference_time is currently not set
 
       // Container of merged TriggerID(s) by event builder
       const std::set<int32_t> & red_trigger_ids = red.get_origin_trigger_ids();
@@ -107,13 +110,11 @@ int main (int argc, char *argv[])
 
 	  // OM ID from SNCabling
 	  const sncabling::om_id om_id = red_calo_hit.get_om_id();
-	  // om_id.is_main() [...]
-	  // om_id.get_side() [...]
+	  // om_id.is_main(), om_id.get_side(), etc. => see sncabling method's
 
 	  // Reference time (TDC)
 	  const snemo::datamodel::timestamp & reference_time = red_calo_hit.get_reference_time();
-	  int64_t calo_tdc = reference_time.get_ticks();
-	  // >>> 1 calo TDC tick = 6.25E-9 sec
+	  int64_t calo_tdc = reference_time.get_ticks(); // >>> 1 calo TDC tick = 6.25E-9 sec
 
 	  // Digitized waveform
 	  const std::vector<int16_t> & waveform = red_calo_hit.get_waveform();
@@ -139,24 +140,22 @@ int main (int argc, char *argv[])
 
 	  // CELL ID from SNCabling
 	  const sncabling::gg_cell_id gg_id = red_tracker_hit.get_cell_id();
-	  // gg_id.get_side()
-	  // gg_id.get_row()
-	  // gg_id.get_layer()
+	  // => gg_id.get_side(), gg_id.get_row() and gg_id.get_layer()
 
 	  // GG timestamps
 	  const std::vector<snemo::datamodel::tracker_digitized_hit::gg_times> & gg_timestamps_v = red_tracker_hit.get_times();
+	  // NB: several timestamps may be read from the same GG cell (probably due to noise ?).
+	  // If so, decision should be done on which one has to be used -- Looks to be rare fortunatly
 
 	  // Scan timestamps
-	  if (gg_timestamps_v.size() == 1)
+	  if (gg_timestamps_v.size() >= 1)
 	    {
-	      // >>> 1 tracker TDC tick = 12.5E-9 sec
-
 	      // Case without multiple hit in the same category
 	      const snemo::datamodel::tracker_digitized_hit::gg_times & gg_timestamps = gg_timestamps_v.front();
 
 	      // ANODE timestamps
 	      const snemo::datamodel::timestamp anode_timestamp_r0 = gg_timestamps.get_anode_time(0);
-	      const int64_t anode_tdc_r0 = anode_timestamp_r0.get_ticks();
+	      const int64_t anode_tdc_r0 = anode_timestamp_r0.get_ticks(); // >>> 1 tracker TDC tick = 12.5E-9 sec
 
 	      const snemo::datamodel::timestamp anode_timestamp_r1 = gg_timestamps.get_anode_time(1);
 	      const int64_t anode_tdc_r1 = anode_timestamp_r1.get_ticks();
