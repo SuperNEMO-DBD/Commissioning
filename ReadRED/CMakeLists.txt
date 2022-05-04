@@ -24,6 +24,11 @@ find_package(SNFrontEndElectronics REQUIRED)
 include_directories(${SNFrontEndElectronics_INCLUDE_DIRS})
 
 # - Executable:
-add_executable(read_red read_red.cxx)
-
-target_link_libraries(read_red SNFrontEndElectronics::snfee)
+file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cxx)
+foreach(source ${SOURCES})
+    file(RELATIVE_PATH cxx_filename ${CMAKE_CURRENT_SOURCE_DIR} ${source})
+    string(REPLACE ".cxx" "" exe_filename ${cxx_filename})
+    message(STATUS "adding executable ${exe_filename}")
+    add_executable(${exe_filename} ${cxx_filename})
+    target_link_libraries(${exe_filename} SNFrontEndElectronics::snfee)
+endforeach(source ${SOURCES})
