@@ -24,7 +24,7 @@ make
 cd ../
 
 # run demo with a RED file
-build/read_red -i $RED_PATH/snemo_run-696_red.data.gz
+build/read_red -i $RED_PATH/snemo_run-612_red.data.gz
 
 # create your own program
 cp read_red.cxx my_red_analysis.cxx
