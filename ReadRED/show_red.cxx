@@ -31,6 +31,8 @@ int main (int argc, char *argv[])
   int run_number = -1;
   int event_number = -1;
 
+  int tracker_commissioning_area = -1;
+
   std::string input_filename = "";
 
   for (int iarg=1; iarg<argc; ++iarg)
@@ -47,6 +49,16 @@ int main (int argc, char *argv[])
 	  else if (arg=="-e" || arg=="--event")
 	    event_number = atoi(argv[++iarg]);
 
+	  else if (arg=="-a" || arg=="--area")
+	    {
+	      tracker_commissioning_area = atoi(argv[++iarg]);
+
+	      if ((tracker_commissioning_area < 0) || (tracker_commissioning_area >=8))
+		{
+		  std::cerr << "*** wrong tracker commissioning area ([0-7])" << std::endl;
+		  tracker_commissioning_area = -1;
+		}
+	    }
 	  else if (arg=="-h" || arg=="--help")
 	    {
 	      std::cout << std::endl;
@@ -318,6 +330,30 @@ int main (int argc, char *argv[])
 
       demonstrator_display->settitle(title.c_str());
       demonstrator_display->draw_top();
+
+      if (tracker_commissioning_area != -1)
+	{
+	  // put in gray color unused cells
+	  int first_row = 14*tracker_commissioning_area;
+
+	  if (tracker_commissioning_area >= 4)
+	    first_row++;
+
+	  int last_row = first_row + 14;
+
+	  for (int cell_side=0; cell_side<2; ++cell_side)
+	    for (int cell_row=0; cell_row<113; ++cell_row)
+	      {
+		if ((cell_row >= first_row) && (cell_row < last_row))
+		  continue;
+
+		for (int cell_layer=0; cell_layer<9; ++cell_layer)
+		  demonstrator_display->setggcolor(cell_side, cell_row, cell_layer, kGray+1);
+	      }
+
+	  demonstrator_display->update_canvas();
+	}
+
       demonstrator_display->canvas->SaveAs(Form("run-%d_event-%d.png", run_number, event_number));
 
       break;
