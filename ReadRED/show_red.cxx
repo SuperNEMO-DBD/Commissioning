@@ -154,7 +154,7 @@ int main (int argc, char *argv[])
       demonstrator_display->setrange(0, 1);
 
       printf("\n");
-      printf("=> %zd CALO HIT(s) :\n", red_tracker_hits.size());
+      printf("=> %zd CALO HIT(s) :\n", red_calo_hits.size());
 
       // Scan calo hits
       for (const snemo::datamodel::calo_digitized_hit & red_calo_hit : red_calo_hits)
@@ -314,7 +314,7 @@ int main (int argc, char *argv[])
 
       printf("\n");
 
-      std::string title = Form("RUN %d // TRIGGER ", run_number);
+      std::string title = Form("RUN %d // EVENT %d // TRIGGER ID ", run_number, event_number);
       
       bool first_trigger_id = true;
 
