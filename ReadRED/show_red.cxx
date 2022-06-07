@@ -31,7 +31,8 @@ int main (int argc, char *argv[])
   int run_number = -1;
   int event_number = -1;
 
-  int tracker_commissioning_area = -1;
+  int tracker_area = -1;
+  int tracker_crate = -1;
 
   std::string input_filename = "";
 
@@ -49,25 +50,40 @@ int main (int argc, char *argv[])
 	  else if (arg=="-e" || arg=="--event")
 	    event_number = atoi(argv[++iarg]);
 
-	  else if (arg=="-a" || arg=="--area")
+	  else if (arg=="-a" || arg=="--tracker-area")
 	    {
-	      tracker_commissioning_area = atoi(argv[++iarg]);
+	      tracker_area = atoi(argv[++iarg]);
 
-	      if ((tracker_commissioning_area < 0) || (tracker_commissioning_area >=8))
+	      if ((tracker_area < 0) || (tracker_area >=8))
 		{
 		  std::cerr << "*** wrong tracker commissioning area ([0-7])" << std::endl;
-		  tracker_commissioning_area = -1;
+		  tracker_area = -1;
 		}
 	    }
+
+	  else if (arg=="-c" || arg=="--tracker-crate")
+	    {
+	      tracker_crate = atoi(argv[++iarg]);
+
+	      if ((tracker_crate < 0) || (tracker_crate >=3))
+		{
+		  std::cerr << "*** wrong tracker commissioning crate ([0-2])" << std::endl;
+		  tracker_crate = -1;
+		}
+	    }
+
 	  else if (arg=="-h" || arg=="--help")
 	    {
 	      std::cout << std::endl;
 	      std::cout << "Usage:   " << argv[0] << " [options]" << std::endl;
 	      std::cout << std::endl;
 	      std::cout << "Options:   -h / --help" << std::endl;
-	      std::cout << "           -i / --input  RED_FILE" << std::endl;
+	      // std::cout << "           -i / --input  RED_FILE" << std::endl;
 	      std::cout << "           -r / --run    RUN_NUMBER" << std::endl;
 	      std::cout << "           -r / --event  EVENT_NUMBER" << std::endl;
+	      std::cout << std::endl;
+	      std::cout << "           -a / --tracker-area   [0-7]" << std::endl;
+	      std::cout << "           -c / --tracker-crate  [0-2]" << std::endl;
 	      std::cout << std::endl;
 	      return 0;
 	    }
@@ -331,15 +347,36 @@ int main (int argc, char *argv[])
       demonstrator_display->settitle(title.c_str());
       demonstrator_display->draw_top();
 
-      if (tracker_commissioning_area != -1)
+      if (tracker_area != -1)
 	{
 	  // put in gray color unused cells
-	  int first_row = 14*tracker_commissioning_area;
+	  int first_row = 14*tracker_area;
 
-	  if (tracker_commissioning_area >= 4)
+	  if (tracker_area >= 4)
 	    first_row++;
 
 	  int last_row = first_row + 14;
+
+	  for (int cell_side=0; cell_side<2; ++cell_side)
+	    for (int cell_row=0; cell_row<113; ++cell_row)
+	      {
+		if ((cell_row >= first_row) && (cell_row < last_row))
+		  continue;
+
+		for (int cell_layer=0; cell_layer<9; ++cell_layer)
+		  demonstrator_display->setggcolor(cell_side, cell_row, cell_layer, kGray+1);
+	      }
+
+	  demonstrator_display->update_canvas();
+	}
+
+      else if (tracker_crate != -1)
+	{
+	  // put in gray color unused cells
+	  const int crate_rows[4] = {0, 38, 75, 113};
+
+	  int first_row = crate_rows[tracker_crate];
+	  int last_row = crate_rows[tracker_crate+1];
 
 	  for (int cell_side=0; cell_side<2; ++cell_side)
 	    for (int cell_row=0; cell_row<113; ++cell_row)
