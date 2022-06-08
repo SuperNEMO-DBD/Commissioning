@@ -153,30 +153,18 @@ int main (int argc, char *argv[])
       // Container of merged TriggerID(s) by event builder
       const std::set<int32_t> & red_trigger_ids = red.get_origin_trigger_ids();
 
-      // Digitized calo hits
-      const std::vector<snemo::datamodel::calo_digitized_hit> red_calo_hits = red.get_calo_hits();
-
-      // Digitized tracker hits
-      const std::vector<snemo::datamodel::tracker_digitized_hit> red_tracker_hits = red.get_tracker_hits();
-
-      // // Print RED infos
-      // std::cout << "Event #" << red_event_id << " contains "
-      // 		<< red_trigger_ids.size() << " TriggerID(s) with "
-      // 		<< red_calo_hits.size() << " calo hit(s) and "
-      // 		<< red_tracker_hits.size() << " tracker hit(s)"
-      // 		<< std::endl;
 
       sndisplay::demonstrator *demonstrator_display = new sndisplay::demonstrator ("Demonstrator");
       demonstrator_display->setrange(0, 1);
 
-      printf("\n");
-      printf("=> %zd CALO HIT(s) :\n", red_calo_hits.size());
+      // scan calorimeter hits
+      const std::vector<snemo::datamodel::calo_digitized_hit> red_calo_hits = red.get_calo_hits();
+      printf("\n=> %zd CALO HIT(s) :\n", red_calo_hits.size());
 
-      // Scan calo hits
       for (const snemo::datamodel::calo_digitized_hit & red_calo_hit : red_calo_hits)
 	{
 	  const snemo::datamodel::timestamp & reference_time = red_calo_hit.get_reference_time();
-	  int64_t calo_tdc = reference_time.get_ticks(); // >>> 1 calo TDC tick = 6.25E-9 sec
+	  const int64_t calo_tdc = reference_time.get_ticks();
 
 	  const double calo_adc2mv = 2500./4096.;
 	  const float calo_amplitude  = red_calo_hit.get_fwmeas_peak_amplitude() * calo_adc2mv / 8.0;
@@ -191,12 +179,8 @@ int main (int argc, char *argv[])
 	      om_row    = om_id.get_row();
 	      om_num = om_side*20*13 + om_column*13 + om_row;
 
-	      printf("M:%d.%02d.%02d  (OM%4d)   TDC = %12ld   Amplitude = %5.1f mV   ",
+	      printf("M:%d.%02d.%02d  (OM %3d)   TDC = %12ld   Amplitude = %5.1f mV   ",
 		     om_side, om_column, om_row, om_num, calo_tdc, -calo_amplitude);
-
-	      printf("%s %s\n",
-		     red_calo_hit.is_high_threshold() ? "[HT]" : "    ",
-		     red_calo_hit.is_low_threshold_only() ? "[LT]" : "");
 	    }
 
 	  else if (om_id.is_xwall())
@@ -207,12 +191,8 @@ int main (int argc, char *argv[])
 	      om_row    = om_id.get_row();
 	      om_num = 520 + om_side*64 +  om_wall*32 + om_column*16 + om_row;
 
-	      printf("X:%d.%d.%d.%02d (OM%4d)   TDC = %12ld   Amplitude = %5.1f mV  ",
+	      printf("X:%d.%d.%d.%02d (OM %3d)   TDC = %12ld   Amplitude = %5.1f mV  ",
 		     om_side, om_wall, om_column, om_row, om_num, calo_tdc, -calo_amplitude);
-
-	      printf("%s %s\n",
-		     red_calo_hit.is_high_threshold() ? "[HT]" : "    ",
-		     red_calo_hit.is_low_threshold_only() ? "[LT]" : "");
 	    }
 
 	  else if (om_id.is_gveto())
@@ -222,22 +202,22 @@ int main (int argc, char *argv[])
 	      om_column = om_id.get_column();
 	      om_num = 520 + 128 + om_side*32 + om_wall*16 + om_column;
 
-	      printf("G:%d.%d.%02d   (OM%4d)   TDC = %12ld   Ampl = %5.1f mV  ",
+	      printf("G:%d.%d.%02d   (OM %3d)   TDC = %12ld   Ampl = %5.1f mV  ",
 		     om_side, om_wall, om_column, om_num, calo_tdc, -calo_amplitude);
-
-	      printf("%s %s\n",
-		     red_calo_hit.is_high_threshold() ? "[HT]" : "    ",
-		     red_calo_hit.is_low_threshold_only() ? "[LT]" : "");
 	    }
+
+	  printf("%s %s\n",
+		 red_calo_hit.is_high_threshold() ? "[HT]" : "    ",
+		 red_calo_hit.is_low_threshold_only() ? "[LT]" : "");
 
 	  if (red_calo_hit.is_high_threshold() || red_calo_hit.is_low_threshold_only())
 	    demonstrator_display->setomcontent(om_num, 1);
 	}
 
-      printf("\n");
-      printf("=> %zd TRACKER HIT(s) :\n", red_tracker_hits.size());
+      // scan tracker hits
+      const std::vector<snemo::datamodel::tracker_digitized_hit> red_tracker_hits = red.get_tracker_hits();
+      printf("\n=> %zd TRACKER HIT(s) :\n", red_tracker_hits.size());
 
-      // Scan tracker hits
       for (const snemo::datamodel::tracker_digitized_hit & red_tracker_hit : red_tracker_hits)
 	{
 	  const sncabling::gg_cell_id gg_id = red_tracker_hit.get_cell_id();
@@ -247,24 +227,20 @@ int main (int argc, char *argv[])
 	  int cell_layer = gg_id.get_layer();
 	  int cell_num = 113*9*cell_side + 9*cell_row + cell_layer;
 
+	  const std::vector<snemo::datamodel::tracker_digitized_hit::gg_times> & gg_timestamps_v = red_tracker_hit.get_times();
+
 	  bool has_anode = false;
 	  bool has_bottom_cathode = false;
 	  bool has_top_cathode = false;
-
-	  // GG timestamps
-	  const std::vector<snemo::datamodel::tracker_digitized_hit::gg_times> & gg_timestamps_v = red_tracker_hit.get_times();
-
-	  if (gg_timestamps_v.size() == 0)
-	    continue;
-
-	  bool first_timestamps = true;
+	  bool first_timestamp = true;
 
 	  for (const snemo::datamodel::tracker_digitized_hit::gg_times & gg_timestamps : red_tracker_hit.get_times())
 	    {
-	      if (first_timestamps)
+	      if (first_timestamp)
 		{
 		  printf("GG:%d.%03d.%1d", cell_side, cell_row, cell_layer);
-		  first_timestamps = false;}
+		  first_timestamp = false;
+		}
 	      else
 		printf("          ");
 
