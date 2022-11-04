@@ -11,9 +11,9 @@
 #include <sncabling/gg_cell_id.h>
 #include <sncabling/label.h>
 
-#include <snemo/datamodels/raw_event_data.h>
-#include <snemo/datamodels/calo_digitized_hit.h>
-#include <snemo/datamodels/tracker_digitized_hit.h>
+#include <snfee/data/raw_event_data.h>
+#include <snfee/data/calo_digitized_hit.h>
+#include <snfee/data/tracker_digitized_hit.h>
 
 #include "sndisplay-demonstrator.cc"
 
@@ -109,7 +109,7 @@ int main (int argc, char *argv[])
       
       char input_filename_buffer[128];
       snprintf(input_filename_buffer, sizeof(input_filename_buffer),
-	       "%s/snemo_run-%d_red.data.gz", red_path, run_number);
+	       "%s/snemo_run-%d_red-v2.data.gz", red_path, run_number);
       input_filename = std::string(input_filename_buffer);
     }
 
@@ -124,7 +124,7 @@ int main (int argc, char *argv[])
   snfee::io::multifile_data_reader red_source (reader_cfg);
 
   // Working RED object
-  snemo::datamodel::raw_event_data red;
+  snfee::data::raw_event_data red;
     
   // RED counter
   std::size_t red_counter = 0;
@@ -135,7 +135,7 @@ int main (int argc, char *argv[])
   while (red_source.has_record_tag())
     {
       // Check the serialization tag of the next record:
-      DT_THROW_IF(!red_source.record_tag_is(snemo::datamodel::raw_event_data::SERIAL_TAG),
+      DT_THROW_IF(!red_source.record_tag_is(snfee::data::raw_event_data::SERIAL_TAG),
                   std::logic_error, "Unexpected record tag '" << red_source.get_record_tag() << "'!");
 
       // Load the next RED object:
@@ -158,12 +158,12 @@ int main (int argc, char *argv[])
       demonstrator_display->setrange(0, 1);
 
       // scan calorimeter hits
-      const std::vector<snemo::datamodel::calo_digitized_hit> red_calo_hits = red.get_calo_hits();
+      const std::vector<snfee::data::calo_digitized_hit> red_calo_hits = red.get_calo_hits();
       printf("\n=> %zd CALO HIT(s) :\n", red_calo_hits.size());
 
-      for (const snemo::datamodel::calo_digitized_hit & red_calo_hit : red_calo_hits)
+      for (const snfee::data::calo_digitized_hit & red_calo_hit : red_calo_hits)
 	{
-	  const snemo::datamodel::timestamp & reference_time = red_calo_hit.get_reference_time();
+	  const snfee::data::timestamp & reference_time = red_calo_hit.get_reference_time();
 	  const int64_t calo_tdc = reference_time.get_ticks();
 
 	  const double calo_adc2mv = 2500./4096.;
@@ -215,10 +215,10 @@ int main (int argc, char *argv[])
 	}
 
       // scan tracker hits
-      const std::vector<snemo::datamodel::tracker_digitized_hit> red_tracker_hits = red.get_tracker_hits();
+      const std::vector<snfee::data::tracker_digitized_hit> red_tracker_hits = red.get_tracker_hits();
       printf("\n=> %zd TRACKER HIT(s) :\n", red_tracker_hits.size());
 
-      for (const snemo::datamodel::tracker_digitized_hit & red_tracker_hit : red_tracker_hits)
+      for (const snfee::data::tracker_digitized_hit & red_tracker_hit : red_tracker_hits)
 	{
 	  const sncabling::gg_cell_id gg_id = red_tracker_hit.get_cell_id();
 
@@ -227,14 +227,14 @@ int main (int argc, char *argv[])
 	  int cell_layer = gg_id.get_layer();
 	  int cell_num = 113*9*cell_side + 9*cell_row + cell_layer;
 
-	  const std::vector<snemo::datamodel::tracker_digitized_hit::gg_times> & gg_timestamps_v = red_tracker_hit.get_times();
+	  const std::vector<snfee::data::tracker_digitized_hit::gg_times> & gg_timestamps_v = red_tracker_hit.get_times();
 
 	  bool has_anode = false;
 	  bool has_bottom_cathode = false;
 	  bool has_top_cathode = false;
 	  bool first_timestamp = true;
 
-	  for (const snemo::datamodel::tracker_digitized_hit::gg_times & gg_timestamps : red_tracker_hit.get_times())
+	  for (const snfee::data::tracker_digitized_hit::gg_times & gg_timestamps : red_tracker_hit.get_times())
 	    {
 	      if (first_timestamp)
 		{
@@ -246,7 +246,7 @@ int main (int argc, char *argv[])
 
 	      for (int r=0; r<5; r++)
 		{
-		  const snemo::datamodel::timestamp anode_timestamp = gg_timestamps.get_anode_time(r);
+		  const snfee::data::timestamp anode_timestamp = gg_timestamps.get_anode_time(r);
 		  const int64_t anode_tdc = anode_timestamp.get_ticks();
 
 		  if (anode_tdc != snfee::data::INVALID_TICKS)
@@ -258,7 +258,7 @@ int main (int argc, char *argv[])
 		}
 
 	      {
-		const snemo::datamodel::timestamp bottom_cathode_timestamp = gg_timestamps.get_bottom_cathode_time();
+		const snfee::data::timestamp bottom_cathode_timestamp = gg_timestamps.get_bottom_cathode_time();
 		const int64_t bottom_cathode_tdc = bottom_cathode_timestamp.get_ticks();
 
 		if (bottom_cathode_tdc != snfee::data::INVALID_TICKS)
@@ -270,7 +270,7 @@ int main (int argc, char *argv[])
 	      }
 
 	      {
-		const snemo::datamodel::timestamp top_cathode_timestamp = gg_timestamps.get_top_cathode_time();
+		const snfee::data::timestamp top_cathode_timestamp = gg_timestamps.get_top_cathode_time();
 		const int64_t top_cathode_tdc = top_cathode_timestamp.get_ticks();
 
 		if (top_cathode_tdc != snfee::data::INVALID_TICKS)
