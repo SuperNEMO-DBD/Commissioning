@@ -2,4 +2,4 @@
 
 source /sps/nemo/scratch/chauveau/software/gitlab-snfee-new/this_snfee.sh
 
-export RED_PATH=/sps/nemo/snemo/snemo_data/raw_data/RED
+export RED_PATH=/sps/nemo/snemo/snemo_data/raw_data/RED/delta-tdc-10us-v2
