@@ -14,11 +14,6 @@ endif()
 cmake_minimum_required(VERSION 3.3 FATAL_ERROR)
 project(snfee_examples_read_rtd VERSION 0.1.0)
 
-# - Load Builtin/Custom Modules
-include(GNUInstallDirs)
-list(INSERT CMAKE_MODULE_PATH 0 ${PROJECT_SOURCE_DIR}/cmake)
-message(STATUS "[info] CMAKE_MODULE_PATH = '${CMAKE_MODULE_PATH}'")
-
 # - Build setup
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
